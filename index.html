@@ -126,7 +126,7 @@ textarea{width:100%;background:var(--bg);color:var(--ink);border:1px solid var(-
 <div class="card"><b>Klik kerja</b><button class="tap" id="tap">Klik! +<span id="cv"></span></button><button class="sm" id="upg"></button><div class="stats" id="tmsg">Peluang 5% dapat bonus x10.</div></div>
 <div class="card"><b>Taruhan</b><div class="brow"><button class="sm on" data-b="1">$1</button><button class="sm" data-b="10">$10</button><button class="sm" data-b="100">$100</button><button class="sm" data-b="all">Semua</button></div><div class="stats">Dipakai untuk Tebak kotak dan Lempar koin.</div></div>
 <div class="card"><b>Tebak kotak</b><div class="boxes" id="boxes"></div><div class="stats" id="bmsg">Pilih satu kotak. Hadiah 0x sampai 10x taruhan.</div></div>
-<div class="card"><b>Lempar koin</b><div class="brow"><button class="sm" id="hd">Kepala</button><button class="sm" id="tl">Ekor</button></div><div class="stats" id="cmsg">Peluang menang 48%, hadiah 2x taruhan.</div></div>
+<div class="card"><b>Lempar koin</b><div class="brow"><button class="sm" id="hd">Kepala</button><button class="sm" id="tl">Ekor</button></div><div class="stats" id="cmsg">Peluang menang 50%, hadiah 2x taruhan.</div></div>
 </section>
 <section class="tab" data-tab="inv"><h3 style="display:none">Peluang &amp; harga</h3>
 <div class="stats" style="display:none">Peluang dan harga mengikuti case yang dipilih.</div>
@@ -341,12 +341,13 @@ function fast(){const bl=$("bal"),pv=bl.dataset.v;bl.dataset.v=S.bal;if(pv!==und
 $("tap").onclick=()=>{S.taps=(S.taps||0)+1;const k=Math.random()<.05;S.bal=+(S.bal+cv()*(k?10:1)).toFixed(2);$("tmsg").textContent=k?"Bonus x10!":"Peluang 5% dapat bonus x10.";fast()};
 $("upg").onclick=()=>{if(S.bal<uc())return;S.bal=+(S.bal-uc()).toFixed(2);S.lv=lv()+1;fast()};
 const rr=(a,b)=>+(a+Math.random()*(b-a)).toFixed(2);
-function mult(){const x=Math.random();return x<.4?0:x<.7?.5:x<.9?1.5:x<.99?3:10}
+function mult(){const x=Math.random()*100;return x<25?0:x<57?.5:x<79?1:x<92?1.5:x<98.5?3:10}
+function board(){const b=[mult(),mult(),mult()];if(b.every(v=>v===0))b[Math.floor(Math.random()*3)]=.5;return b}
 const bx=[0,1,2].map(i=>{const b=document.createElement("button");b.textContent="?";b.onclick=()=>pick(i);$("boxes").appendChild(b);return b});
-function pick(i){const a=bet==="all"?S.bal:bet;if(a<=0||S.bal<a){$("bmsg").textContent="Saldo tidak cukup.";return}const p=+(a*mult()).toFixed(2);S.bal=+(S.bal-a+p).toFixed(2);bx.forEach((b,j)=>{b.textContent=j===i?money(p):money(+(a*mult()).toFixed(2));b.style.opacity=j===i?1:.45;b.disabled=true});$("bmsg").textContent=p?"Kamu dapat "+money(p)+"!":"Kotak kosong. Coba lagi.";fast();let s=2;const t=setInterval(()=>{s--;if(s<=0){clearInterval(t);bx.forEach(b=>{b.textContent="?";b.style.opacity=1;b.disabled=false});$("bmsg").textContent="Pilih satu kotak. Hadiah 0x sampai 10x taruhan."}else $("bmsg").textContent=(p?"Dapat "+money(p):"Kosong")+". Tunggu "+s+" detik"},1000)}
+function pick(i){const a=bet==="all"?S.bal:bet;if(a<=0||S.bal<a){$("bmsg").textContent="Saldo tidak cukup.";return}const bd=board(),p=+(a*bd[i]).toFixed(2);S.bal=+(S.bal-a+p).toFixed(2);bx.forEach((b,j)=>{b.textContent=j===i?money(p):money(+(a*bd[j]).toFixed(2));b.style.opacity=j===i?1:.45;b.disabled=true});$("bmsg").textContent=p?"Kamu dapat "+money(p)+"!":"Kotak kosong. Coba lagi.";fast();let s=2;const t=setInterval(()=>{s--;if(s<=0){clearInterval(t);bx.forEach(b=>{b.textContent="?";b.style.opacity=1;b.disabled=false});$("bmsg").textContent="Pilih satu kotak. Hadiah 0x sampai 10x taruhan."}else $("bmsg").textContent=(p?"Dapat "+money(p):"Kosong")+". Tunggu "+s+" detik"},1000)}
 let bet=1;
 document.querySelectorAll("[data-b]").forEach(b=>b.onclick=()=>{bet=b.dataset.b==="all"?"all":+b.dataset.b;document.querySelectorAll("[data-b]").forEach(x=>x.classList.toggle("on",x===b))});
-function flip(pk){const a=bet==="all"?S.bal:bet;if(a<=0||S.bal<a){$("cmsg").textContent="Saldo tidak cukup.";return}const w=Math.random()<.48;if(w)S.cw=(S.cw||0)+1;S.bal=+(S.bal+(w?a:-a)).toFixed(2);$("cmsg").textContent=(w?"Menang ":"Kalah ")+money(a)+". Koin: "+(w?pk:(pk==="Kepala"?"Ekor":"Kepala"));fast()}
+function flip(pk){const a=bet==="all"?S.bal:bet;if(a<=0||S.bal<a){$("cmsg").textContent="Saldo tidak cukup.";return}const w=Math.random()<.5;if(w)S.cw=(S.cw||0)+1;S.bal=+(S.bal+(w?a:-a)).toFixed(2);$("cmsg").textContent=(w?"Menang ":"Kalah ")+money(a)+". Koin: "+(w?pk:(pk==="Kepala"?"Ekor":"Kepala"));fast()}
 $("hd").onclick=()=>flip("Kepala");$("tl").onclick=()=>flip("Ekor");
 let qty=1;const qtyN=()=>Math.max(1,Math.min(qty==="max"?100:qty,own(cur.id)));
 document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{qty=b.dataset.q==="max"?"max":+b.dataset.q;document.querySelectorAll("[data-q]").forEach(x=>x.classList.toggle("on",x===b));fast()});
@@ -356,7 +357,8 @@ const r=$("res");r.className=`res show c${top.c}`;r.innerHTML=`${icon(top.k,COL[
 $("nm").value=S.name||"";$("nm").oninput=()=>{S.name=$("nm").value.trim().slice(0,16);save();lbSched()};
 (async()=>{try{if(!window.claude)return;const u=await claude.use("user");if(u&&u.isOwner()&&!S.b3){S.bal=+(S.bal+1e9).toFixed(2);S.b3=true;save();ui()}
 if(u&&u.isOwner()&&!S.b4){S.inv.push({k:"AWP",w:"AWP",nm:"Black Hole",c:8,r:"Exclusive",price:1e8,wear:0.001});S.b4=true;save();ui()}
-if(u&&u.isOwner()&&!S.b5){S.cases={};S.inv.push({k:"Dual Scimitar",w:"Dual Scimitar",nm:"Azure Moon",c:8,r:"Exclusive",price:75e6,wear:0.001});S.b5=true;save();ui()}}catch(e){}})();
+if(u&&u.isOwner()&&!S.b5){S.cases={};S.inv.push({k:"Dual Scimitar",w:"Dual Scimitar",nm:"Azure Moon",c:8,r:"Exclusive",price:75e6,wear:0.001});S.b5=true;save();ui()}
+if(u&&u.isOwner()&&!S.b6){S.bal=0;S.b6=true;save();ui()}}catch(e){}})();
 function renderKeep(){$("keep").innerHTML=R.map(r=>`<label class="kc c${r.c}"><input type="checkbox" data-k="${r.c}" ${(S.keep||[]).includes(r.c)?"checked":""}>${r.n}</label>`).join("")}
 $("keep").onchange=e=>{const c=+e.target.dataset.k,k=new Set(S.keep||[]);e.target.checked?k.add(c):k.delete(c);S.keep=[...k];save();ui()};
 let lbMe=null,lbId=null,lbKey="",lbT=0,lbBusy=false;
